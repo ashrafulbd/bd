@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<title>শোমসপুর উচ্চ বিদ্যালয়</title>
+<link href="11896195_947878048584570_1895828124001336689_n.png" rel="shortcut icon" type="image/x-icon">
+<script src="jscookmenu.min.js"></script>
+<link href="font-awesome.min.css" rel="stylesheet">
+<link href="শোমসপুর_উচ্চ_বিদ্যালয়.css" rel="stylesheet">
+<link href="index.css" rel="stylesheet">
+<script src="jquery-1.11.3.min.js"></script>
+<script src="jquery.ui.effect.min.js"></script>
+<script src="jquery.ui.effect-fade.min.js"></script>
+<script src="wb.slideshow.min.js"></script>
+<script src="wb.conveyerbelt.min.js"></script>
+<script src="./searchindex.js"></script>
+<script>
+var features = 'toolbar=no,menubar=no,location=no,scrollbars=yes,resizable=yes,status=no,left=,top=,width=,height=';
+var searchDatabase = new SearchDatabase();
+var searchResults_length = 0;
+var searchResults = new Object();
+function searchPage(features)
+{
+   var element = document.getElementById('SiteSearch1');
+   if (element.value.length != 0 || element.value != " ")
+   {
+      var value = unescape(element.value);
+      var keywords = value.split(" ");
+      searchResults_length = 0;
+      for (var i=0; i<database_length; i++)
+      {
+         var matches = 0;
+         var words = searchDatabase[i].title + " " + searchDatabase[i].description + " " + searchDatabase[i].keywords;
+         for (var j = 0; j < keywords.length; j++)
+         {
+            var pattern = new RegExp(keywords[j], "i");
+            var result = words.search(pattern);
+            if (result >= 0)
+            {
+               matches++;
+            }
+            else
+            {
+               matches = 0;
+            }
+         }
+         if (matches == keywords.length)
+         {
+            searchResults[searchResults_length++] = searchDatabase[i];
+         }
+      }
+      var wndResults = window.open('about:blank', '', features);
+      setTimeout(function()
+      {
+         var results = '';
+         var html = '<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta http-equiv="Content-Language" content="bn"><title>Search results<\/title><\/head>';
+         html = html + '<body style="background-color:#FFFFFF;margin:0;padding:2px 2px 2px 2px;">';
+         html = html + '<span style="font-family:Arial;font-size:13px;color:#000000">';
+         for (var n=0; n<searchResults_length; n++)
+         {
+            var page_keywords = searchResults[n].keywords;
+            results = results + '<strong><a style="color:#0000FF" target="_parent" href="'+searchResults[n].url+'">'+searchResults[n].title +'<\/a><\/strong><br>Keywords: ' + page_keywords +'<br><br>\n';
+         }
+         if (searchResults_length == 0)
+         {
+            results = 'No results';
+         }
+         else
+         {
+            html = html + searchResults_length;
+            html = html + ' result(s) found for search term: ';
+            html = html + value;
+            html = html + '<br><br>';
+         }
+         html = html + results;
+         html = html + '<\/span>';
+         html = html + '<\/body><\/html>';
+         wndResults.document.write(html);
+     },100);
+   }
+   return false;
+}
+function searchParseURL()
+{
+   var url = decodeURIComponent(window.location.href);
+   if (url.indexOf('?') > 0)
+   {
+      var terms = '';
+      var params = url.split('?');
+      var values = params[1].split('&');
+      for (var i=0;i<values.length;i++)
+      {
+         var param = values[i].split('=');
+         if (param[0] == 'q')
+         {
+            terms = unescape(param[1]);
+            break;
+         }
+      }
+      if (terms != '')
+      {
+         var element = document.getElementById('SiteSearch1');
+         element.value = terms;
+         searchPage('');
+      }
+   }
+}
+</script>
+<script>
+$(document).ready(function()
+{
+   $("#SlideShow1").slideshow(
+   {
+      interval: 5000,
+      type: 'sequence',
+      effect: 'fade',
+      direction: '',
+      pagination: false,
+      effectlength: 2000
+   });
+   $("#SlideShow2").conveyerbelt({speed:3, spacing: 7});
+   searchParseURL();
+   var $autocomplete = $('<ul class="autocomplete"></ul>').hide().insertAfter('#SiteSearch1');
+   var selectedItem = null;
+   var setSelectedItem = function(item)
+   {
+      selectedItem = item;
+      if (selectedItem === null)
+      {
+         $autocomplete.hide();
+         return;
+      }
+      if (selectedItem < 0)
+      {
+         selectedItem = 0;
+      }
+      if (selectedItem >= $autocomplete.find('li').length)
+      {
+         selectedItem = $autocomplete.find('li').length - 1;
+      }
+      $autocomplete.find('li').removeClass('selected').eq(selectedItem).addClass('selected');
+      $autocomplete.css('left', $('#SiteSearch1').position().left);
+      $autocomplete.css('top', $('#SiteSearch1').position().top + $('#SiteSearch1').outerHeight());
+      $autocomplete.show();
+   };
+   var populateSearchField = function()
+   {
+      $('#SiteSearch1').val($autocomplete.find('li').eq(selectedItem).text());
+      setSelectedItem(null);
+   };
+   $('#SiteSearch1').attr('autocomplete', 'off').keyup(function(event)
+   {
+      if (event.keyCode > 40 || event.keyCode == 8)
+      {
+         var data = new Array();
+         var keywordVal = $('#SiteSearch1').val();
+         keywordVal = keywordVal.toLowerCase();
+         for (i=0; i<database_length; i++)
+         {
+            var words = (searchDatabase[i].title + " " + searchDatabase[i].description + " " + searchDatabase[i].keywords).toLowerCase();
+            var array = words.split(" ");
+            data = $.merge(data, array);
+         }
+
+         var unique = new Array();
+         o:for(var i = 0; i < data.length; i++)
+         {
+            for(var j = 0; j < unique.length; j++)
+            {
+               if(unique[j]==data[i]) continue o;
+            }
+            unique[unique.length] = data[i];
+         }
+
+         unique.sort();
+         if (keywordVal.length && unique.length)
+         {
+            $autocomplete.empty();
+            var item = 0;
+            $.each(unique, function(index, term)
+            {
+               term = term.toLowerCase();
+               if (term.indexOf(keywordVal) == 0)
+               {
+                  $('<li></li>').text(term).data('item', item).appendTo($autocomplete).mouseover(function()
+                  {
+                     var item = $(this).data('item');
+                     setSelectedItem(item);
+                  }).click(populateSearchField);
+                  item++;
+               }
+            });
+            setSelectedItem(0);
+         }
+         else
+         {
+            setSelectedItem(null);
+         }
+      }
+      else
+      if (event.keyCode == 38 && selectedItem !== null)
+      {
+         setSelectedItem(selectedItem - 1);
+         event.preventDefault();
+      }
+      else
+      if (event.keyCode == 40 && selectedItem !== null)
+      {
+         setSelectedItem(selectedItem + 1);
+         event.preventDefault();
+      }
+      else
+      if (event.keyCode == 27 && selectedItem !== null)
+      {
+         setSelectedItem(null);
+      }
+   }).keypress(function(event)
+   {
+      if (event.keyCode == 13 && selectedItem !== null)
+      {
+         populateSearchField();
+         event.preventDefault();
+      }
+   }).blur(function(event)
+   {
+      setTimeout(function()
+      {
+         setSelectedItem(null);
+      }, 250);
+   });
+});
+</script>
+</head>
+<body>
+<div id="wb_Shape1" style="position:absolute;left:79px;top:0px;width:1190px;height:1553px;z-index:0;">
+<img src="images/img0001.png" id="Shape1" alt="" style="width:1190px;height:1553px;"></div>
+<div id="wb_Image1" style="position:absolute;left:89px;top:30px;width:1170px;height:190px;z-index:1;">
+<table cellpadding="0" cellspacing="0" id="Image1" style="line-height:0">
+<tr>
+<td><img src="images/img0003_slice00.png" id="Image1_slice0" alt="" style="width:390px;height:38px;"></td>
+<td><img src="images/img0003_slice01.png" id="Image1_slice1" alt="" style="width:390px;height:38px;"></td>
+<td><img src="images/img0003_slice02.png" id="Image1_slice2" alt="" style="width:390px;height:38px;"></td>
+</tr>
+<tr>
+<td><img src="images/img0003_slice03.png" id="Image1_slice3" alt="" style="width:390px;height:38px;"></td>
+<td><img src="images/img0003_slice04.png" id="Image1_slice4" alt="" style="width:390px;height:38px;"></td>
+<td><img src="images/img0003_slice05.png" id="Image1_slice5" alt="" style="width:390px;height:38px;"></td>
+</tr>
+<tr>
+<td><img src="images/img0003_slice06.png" id="Image1_slice6" alt="" style="width:390px;height:38px;"></td>
+<td><img src="images/img0003_slice07.png" id="Image1_slice7" alt="" style="width:390px;height:38px;"></td>
+<td><img src="images/img0003_slice08.png" id="Image1_slice8" alt="" style="width:390px;height:38px;"></td>
+</tr>
+<tr>
+<td><img src="images/img0003_slice09.png" id="Image1_slice9" alt="" style="width:390px;height:38px;"></td>
+<td><img src="images/img0003_slice10.png" id="Image1_slice10" alt="" style="width:390px;height:38px;"></td>
+<td><img src="images/img0003_slice11.png" id="Image1_slice11" alt="" style="width:390px;height:38px;"></td>
+</tr>
+<tr>
+<td><img src="images/img0003_slice12.png" id="Image1_slice12" alt="" style="width:390px;height:38px;"></td>
+<td><img src="images/img0003_slice13.png" id="Image1_slice13" alt="" style="width:390px;height:38px;"></td>
+<td><img src="images/img0003_slice14.png" id="Image1_slice14" alt="" style="width:390px;height:38px;"></td>
+</tr>
+</table>
+</div>
+<img src="images/img0005.jpg" id="Banner2" alt="&#2472;&#2507;&#2463;&#2495;&#2486;:" style="border-width:0;position:absolute;left:91px;top:221px;width:74px;height:28px;z-index:2;">
+<marquee direction="left" scrolldelay="90" scrollamount="4" behavior="scroll" loop="0" style="position:absolute;left:162px;top:220px;width:1098px;height:30px;z-index:3;" id="Marquee1" onmouseover="this.stop()" onmouseout="this.start()"><span style="color:#000000;font-family:'Shonar Bangla';font-size:24px;"><strong>আমাদের</strong></span><span style="color:#000000;font-family:'Times New Roman';font-size:24px;"><strong> </strong></span><span style="color:#000000;font-family:'Shonar Bangla';font-size:24px;"><strong>বিদ্যালয়ে</strong></span><span style="color:#000000;font-family:'Times New Roman';font-size:24px;"><strong> </strong></span><span style="color:#000000;font-family:'Shonar Bangla';font-size:24px;"><strong>আপনাদের</strong></span><span style="color:#000000;font-family:'Times New Roman';font-size:24px;"><strong> </strong></span><span style="color:#000000;font-family:'Shonar Bangla';font-size:24px;"><strong>স্বাগতম</strong></span></marquee>
+<div id="SlideShow1" style="position:absolute;left:338px;top:300px;width:690px;height:391px;z-index:4;">
+<img class="image" src="images/1.jpg" alt="" title="">
+<img class="image" src="images/JPG.jpg" style="display:none;" alt="" title="">
+<img class="image" src="images/JPG1.jpg" style="display:none;" alt="" title="">
+<img class="image" src="images/JPG2.jpg" style="display:none;" alt="" title="">
+</div>
+<div id="wb_Text1" style="position:absolute;left:520px;top:700px;width:330px;height:28px;z-index:5;text-align:left;">
+<span style="color:#A52A2A;font-family:'Shonar Bangla';font-size:21px;"><strong>শোমসপুর</strong></span><span style="color:#A52A2A;font-family:'Times New Roman';font-size:21px;"><strong> </strong></span><span style="color:#A52A2A;font-family:'Shonar Bangla';font-size:21px;"><strong>উচ্চ</strong></span><span style="color:#A52A2A;font-family:'Times New Roman';font-size:21px;"><strong> </strong></span><span style="color:#A52A2A;font-family:'Shonar Bangla';font-size:21px;"><strong>বিদ্যালয়ে</strong></span><span style="color:#A52A2A;font-family:'Times New Roman';font-size:21px;"><strong> </strong></span><span style="color:#A52A2A;font-family:'Shonar Bangla';font-size:21px;"><strong>আপনাদের</strong></span><span style="color:#A52A2A;font-family:'Times New Roman';font-size:21px;"><strong> </strong></span><span style="color:#A52A2A;font-family:'Shonar Bangla';font-size:21px;"><strong>স্বাগতম</strong></span></div>
+<hr id="Line1" style="position:absolute;left:340px;top:728px;width:380px;height:6px;z-index:6;">
+<div id="wb_Text2" style="position:absolute;left:340px;top:740px;width:690px;height:324px;z-index:7;text-align:left;">
+<span style="background-color:#FFFFFF;color:#000000;font-family:'Shonar Bangla';font-size:20px;">দানিন্ত বৃটিশ আমলে শিক্ষার আলো জ্বালাতে ১৯২৩ সালে প্রথম এম,ই স্কুল হিসাবে বিদ্যালয়টি রেজিষ্ট্রেশন প্রাপ্তি লাভ করে। হাঁটি হাঁটি পা পা করে অনেক বছর গড়িয়ে যাই। ১৯৬৩ সালে বিদ্যালয়ের প্রতিষ্ঠাতা ও প্রধান শিক্ষক জনাব মরহুম আতাহার হুসাইন এলাকার সর্ব সাধারনকে নিয়ে মাধ্যমিক বিদ্যালয় গঠনে অগ্রনী ভূমিকা পালন করেন। ০১/০১/১৯৬৪ইং সাল থেকে বিদ্যালয়টি শোমসপুর উচ্চ বিদ্যালয় নামে শিক্ষা বোর্ডের প্রথম স্বীকৃতি প্রাপ্ত হয়। ১৯৬৫ সালে প্রথম এই বিদ্যালয়ের ছাত্র-ছাত্রীরা এস.এস.সি পরীক্ষায় অংশগ্রহণ করে। ৩১/১২/১৯৬২ সাল থেকে ২৪/০৭/২০০৩ পর্যন্ত আমৃত্যু প্রধান শিক্ষক হিসাবে জনাব মরহুম আতাহার হুসাইন দায়িত্ব পালন করেন। ২৫/০৭/২০০৩ থেকে ২৪/০৭/২০০৪ পর্যন্ত বাবু অমল কুমার বসু ভারপ্রাপ্ত প্রধান শিক্ষক হিসাবে দায়িত্ব পালন করেন। ২৫/০৭/০৪ থেকে ১৯/১১/১০ সাল পর্যন্ত জনাব মরহুম ইউছুপ আলী প্রধান শিক্ষক হিসাবে দায়িত্ব পালন করেন। ২০/১১/১০ সাল থেকে ৩০/০৩/১১ সাল পর্যন্ত ভারপ্রাপ্ত প্রধান শিক্ষক হিসাবে দায়িত্ব পালন কারেন জনাব মোঃ শামসুল হক। ৩১/০৩/১১ সাল থেকে বর্তমান প্রধান শিক্ষক জনাব মোঃ আয়েন উদ্দিন অত্যন্ত নিষ্ঠার সাথে দায়িত্ব পালন করছেন। মানবিক, বিজ্ঞান ও ব্যবসায় শিক্ষা শাখা অত্র বিদ্যালয়ে চালু আছে। ষষ্ঠ থেকে দশম শ্রেণি পর্যন্ত ক, খ ও গ শাখা চালু আছে। বর্তমানে প্রায় একহাজার ছাত্র-ছাত্রী অধ্যয়ন করছে। শিক্ষা, সাহিত্য, খেলাধুলা, স্কাউটিং ও সাংস্কৃতিক অঙ্গনে বিদ্যালয়টি বলিষ্ঠ ভূমিকা পালন করে যাচ্ছে।</span></div>
+<div id="Banner3" style="position:absolute;left:89px;top:300px;width:249px;height:26px;z-index:8"><span>Academic Links</span></div>
+<div id="wb_MenuBar2" style="position:absolute;left:89px;top:330px;width:241px;height:592px;z-index:1009;">
+<div id="MenuBar2">
+<ul style="display:none;">
+<li><span></span><span>&#2486;&#2495;&#2453;&#2509;&#2487;&#2494;&nbsp;&#2478;&#2472;&#2509;&#2468;&#2509;&#2480;&#2467;&#2494;&#2482;&#2527;</span></li>
+<li><span></span><span>&#2478;&#2494;&#2471;&#2509;&#2479;&#2478;&#2495;&#2453;&nbsp;&#2451;&nbsp;&#2441;&#2458;&#2509;&#2458;&nbsp;&#2478;&#2494;&#2471;&#2509;&#2479;&#2478;&#2495;&#2453;&nbsp;&#2486;&#2495;&#2453;&#2509;&#2487;&#2494;&nbsp;&#2476;&#2507;&#2480;&#2509;&#2465;</span></li>
+<li><span></span><span>&#2447;&#2488;&#2447;&#2488;&#2488;&#2495;/&#2447;&#2439;&#2458;&#2447;&#2488;&#2488;&#2495;&nbsp;&#2475;&#2482;&#2494;&#2475;&#2482;</span></li>
+<li><span></span><span>&#2478;&#2494;&#2471;&#2509;&#2479;&#2478;&#2495;&#2453;&nbsp;&#2451;&nbsp;&#2441;&#2458;&#2509;&#2458;&nbsp;&#2478;&#2494;&#2471;&#2509;&#2479;&#2478;&#2495;&#2453;&nbsp;&#2486;&#2495;&#2453;&#2509;&#2487;&#2494;</span></li>
+<li><span></span><span>&#2476;&#2509;&#2479;&#2494;&#2472;&#2476;&#2503;&#2439;&#2460;</span></li>
+<li><span></span><span>&#2488;&#2503;&#2453;&#2494;&#2527;&#2503;&#2474;</span></li>
+<li><span></span><span>&#2447;&#2472;&#2488;&#2495;&#2463;&#2495;&#2476;&#2495;</span></li>
+<li><span></span><span>&#2439;-&#2476;&#2497;&#2453;</span></li>
+<li><span></span><span>&#2476;&#2494;&#2434;&#2482;&#2494;&#2474;&#2495;&#2465;&#2495;&#2527;&#2494;</span></li>
+<li><span></span><span>&#2486;&#2495;&#2453;&#2509;&#2487;&#2453;&nbsp;&#2476;&#2494;&#2468;&#2494;&#2527;&#2472;</span></li>
+<li><span></span><span>&#2478;&#2494;&#2482;&#2509;&#2463;&#2495;&#2478;&#2495;&#2465;&#2495;&#2527;&#2494;&nbsp;&#2453;&#2509;&#2482;&#2494;&#2488;&#2480;&#2497;&#2478;&nbsp;&#2478;&#2509;&#2479;&#2494;&#2472;&#2503;&#2460;&#2478;&#2503;&#2472;&#2509;&#2463;</span></li>
+<li><span></span><span>&#2460;&#2494;&#2468;&#2496;&#2527;&nbsp;&nbsp;&#2451;&#2527;&#2503;&#2476;&#2474;&#2507;&#2480;&#2509;&#2463;&#2494;&#2482;</span></li>
+<li><span></span><span>&#2438;&#2439;&#2488;&#2495;&#2463;&#2495;&nbsp;&#2439;&#2472;&nbsp;&#2447;&#2465;&#2497;&#2453;&#2503;&#2486;&#2472;</span></li>
+<li><span></span><span>&#2476;&#2494;&#2434;&#2482;&#2494;&nbsp;&#2453;&#2472;&#2477;&#2494;&#2480;&#2509;&#2463;&#2494;&#2480;</span></li>
+<li><span></span><span>eFF</span></li>
+<li><span></span><span>eSIF</span></li>
+</ul>
+</div>
+<script>
+var cmMenuBar2 =
+{
+   mainFolderLeft: '<div style="width:20px;height:15px" class="MenuBar2SpacerDiv" />',
+   mainFolderRight: '',
+   mainItemLeft: '<div style="width:20px;height:15px" class="MenuBar2SpacerDiv" />',
+   mainItemRight: '',
+   folderLeft: '<div style="width:16px;height:15px" class="MenuBar2SpacerDiv" />',
+   folderRight: '<div style="width:16px;height:15px" class="MenuBar2SpacerDiv" />',
+   itemLeft: '<div style="width:16px;height:15px" class="MenuBar2SpacerDiv" />',
+   itemRight: '<div style="width:16px;height:15px" class="MenuBar2SpacerDiv" />',
+   mainSpacing: 0,
+   subSpacing: 0,
+   delay: 100,
+   offsetVMainAdjust: [0, 0],
+   offsetSubAdjust: [0, 0]
+};
+var cmMenuBar2HSplit = [_cmNoClick, '<td class="MenuBar2MenuSplitLeft"><div></div></td>' +
+                                       '<td class="MenuBar2MenuSplitText"><div></div></td>' +
+                                       '<td class="MenuBar2MenuSplitRight"><div></div></td>'];
+var cmMenuBar2MainVSplit = [_cmNoClick, '<div><table width="37" cellspacing="0"><tr><td class="MenuBar2HorizontalSplit">|</td></tr></table></div>'];
+var cmMenuBar2MainHSplit = [_cmNoClick, '<td colspan="3" class="MenuBar2MainSplitText"><div></div></td>'];
+cmDrawFromText('MenuBar2', 'vbr', cmMenuBar2, 'MenuBar2');
+</script>
+</div>
+<div id="Banner4" style="position:absolute;left:1030px;top:300px;width:228px;height:26px;z-index:10"><span>&#2474;&#2509;&#2480;&#2471;&#2494;&#2472; &#2486;&#2495;&#2453;&#2509;&#2487;&#2453;&#2503;&#2480; &#2476;&#2494;&#2467;&#2496;</span></div>
+<div id="wb_Image2" style="position:absolute;left:1040px;top:330px;width:210px;height:180px;z-index:11;">
+<img src="images/img0007.png" id="Image2" alt=""></div>
+<div id="wb_Text3" style="position:absolute;left:1050px;top:510px;width:210px;height:109px;z-index:12;text-align:left;">
+<span style="color:#000000;font-family:'Times New Roman';font-size:20px;"><strong> </strong></span><span style="color:#000000;font-family:'Shonar Bangla';font-size:20px;"><strong>শিক্ষা</strong></span><span style="color:#000000;font-family:'Times New Roman';font-size:20px;"><strong> </strong></span><span style="color:#000000;font-family:'Shonar Bangla';font-size:20px;"><strong>জাতির</strong></span><span style="color:#000000;font-family:'Times New Roman';font-size:20px;"><strong> </strong></span><span style="color:#000000;font-family:'Shonar Bangla';font-size:20px;"><strong>মেরুদন্ড</strong></span><span style="color:#000000;font-family:'Times New Roman';font-size:20px;"><strong> </strong></span><span style="color:#000000;font-family:'Shonar Bangla';font-size:20px;"><strong>”</strong></span><span style="color:#000000;font-family:'Times New Roman';font-size:20px;"><strong> </strong></span><span style="color:#000000;font-family:'Shonar Bangla';font-size:20px;"><strong>যে</strong></span><span style="color:#000000;font-family:'Times New Roman';font-size:20px;"><strong> </strong></span><span style="color:#000000;font-family:'Shonar Bangla';font-size:20px;"><strong>জাতি</strong></span><span style="color:#000000;font-family:'Times New Roman';font-size:20px;"><strong> </strong></span><span style="color:#000000;font-family:'Shonar Bangla';font-size:20px;"><strong>শিক্ষায়</strong></span><span style="color:#000000;font-family:'Times New Roman';font-size:20px;"><strong> </strong></span><span style="color:#000000;font-family:'Shonar Bangla';font-size:20px;"><strong>যত</strong></span><span style="color:#000000;font-family:'Times New Roman';font-size:20px;"><strong> </strong></span><span style="color:#000000;font-family:'Shonar Bangla';font-size:20px;"><strong>অগ্রগামী</strong></span><span style="color:#000000;font-family:'Times New Roman';font-size:20px;"><strong> </strong></span><span style="color:#000000;font-family:'Shonar Bangla';font-size:20px;"><strong>সেই</strong></span><span style="color:#000000;font-family:'Times New Roman';font-size:20px;"><strong> </strong></span><span style="color:#000000;font-family:'Shonar Bangla';font-size:20px;"><strong>জাতি</strong></span><span style="color:#000000;font-family:'Times New Roman';font-size:20px;"><strong> </strong></span><span style="color:#000000;font-family:'Shonar Bangla';font-size:20px;"><strong>তত</strong></span><span style="color:#000000;font-family:'Times New Roman';font-size:20px;"><strong> </strong></span><span style="color:#000000;font-family:'Shonar Bangla';font-size:20px;"><strong>সভ্য</strong></span><span style="color:#000000;font-family:'Times New Roman';font-size:20px;"><strong> ..<br></strong></span><span style="background-color:#FFFFFF;color:#FF0000;font-family:'Shonar Bangla';font-size:20px;"><strong>প্রধান শিক্ষককে মেইল পাঠান</strong></span></div>
+<div id="Banner5" style="position:absolute;left:1029px;top:632px;width:229px;height:28px;z-index:13"><span>&#2488;&#2494;&#2478;&#2509;&#2474;&#2509;&#2480;&#2468;&#2495;&#2453; &#2454;&#2476;&#2480;</span></div>
+<marquee direction="up" scrolldelay="90" scrollamount="6" behavior="scroll" loop="0" style="position:absolute;left:1029px;top:671px;width:228px;height:185px;z-index:14;" id="Marquee2" onmouseover="this.stop()" onmouseout="this.start()"><span style="color:#000000;font-family:'Shonar Bangla';font-size:27px;"><strong>আমাদের বিদ্যালয়ে <br>আপনাদের স্বাগতম</strong></span></marquee>
+<div id="Banner6" style="position:absolute;left:1030px;top:873px;width:227px;height:32px;z-index:15"><span>&#2472;&#2507;&#2463;&#2495;&#2486; &#2476;&#2507;&#2480;&#2509;&#2465;</span></div>
+<marquee direction="down" scrolldelay="90" scrollamount="6" behavior="scroll" loop="0" style="position:absolute;left:1030px;top:917px;width:228px;height:177px;z-index:16;" id="Marquee3" onmouseover="this.stop()" onmouseout="this.start()"><span style="color:#000000;font-family:'Shonar Bangla';font-size:27px;"><strong>আমাদের বিদ্যালয়ে <br>আপনাদের স্বাগতম</strong></span></marquee>
+<div id="Banner7" style="position:absolute;left:89px;top:1110px;width:569px;height:33px;z-index:17"><span>&#2486;&#2495;&#2453;&#2509;&#2487;&#2453;&#2478;&#2472;&#2509;&#2465;&#2482;&#2496;</span></div>
+<div id="Banner8" style="position:absolute;left:700px;top:1110px;width:558px;height:33px;z-index:18"><span>&#2447;&#2453;&#2472;&#2460;&#2480;&#2503; &#2478;&#2503;&#2472;&#2497;</span></div>
+<div id="SlideShow2" style="position:absolute;left:100px;top:1150px;width:560px;height:280px;overflow:hidden;z-index:19;">
+<img class="image" src="images/1.jpg" alt="" title="">
+<img class="image" src="images/JPG1.jpg" style="display:none;" alt="" title="">
+<img class="image" src="images/JPG2.jpg" style="display:none;" alt="" title="">
+<img class="image" src="images/JPG3.jpg" style="display:none;" alt="" title="">
+</div>
+<div id="wb_TextMenu1" style="position:absolute;left:700px;top:1150px;width:130px;height:260px;text-align:center;z-index:20;">
+<span><a href="">&#2459;&#2497;&#2463;&#2495;&#2480; &#2468;&#2494;&#2482;&#2495;&#2453;&#2494;</a></span>
+<span><a href="">&#2477;&#2480;&#2509;&#2468;&#2495; &#2468;&#2469;&#2509;&#2479;</a></span>
+<span><a href="">&#2477;&#2480;&#2509;&#2468;&#2495; &#2475;&#2480;&#2478;</a></span>
+<span><a href="">&#2474;&#2494;&#2476;&#2482;&#2495;&#2453; &#2474;&#2480;&#2496;&#2453;&#2509;&#2487;&#2494;</a></span>
+<span><a href="">&#2453;&#2472;&#2463;&#2503;&#2472;&#2509;&#2463; &#2465;&#2494;&#2441;&#2472;&#2482;&#2507;&#2465;</a></span>
+<span><a href="">&#2447;&#2453;&#2494;&#2465;&#2503;&#2478;&#2495;&#2453; &#2453;&#2509;&#2479;&#2494;&#2482;&#2503;&#2472;&#2509;&#2465;&#2494;&#2480;</a></span>
+<span><a href="">&#2453;&#2453;&#2509;&#2487; &#2488;&#2434;&#2454;&#2509;&#2479;&#2494;</a></span>
+<span><a href="">&#2474;&#2509;&#2480;&#2468;&#2495;&#2487;&#2509;&#2464;&#2494;&#2472;&#2503;&#2480; &#2439;&#2468;&#2495;&#2489;&#2494;&#2488;</a></span>
+<span><a href="">&#2486;&#2495;&#2453;&#2509;&#2487;&#2453; &#2453;&#2480;&#2509;&#2467;&#2494;&#2480;</a></span>
+<span><a href="">&#2486;&#2495;&#2453;&#2509;&#2487;&#2494;&#2480;&#2509;&#2469;&#2496; &#2453;&#2480;&#2509;&#2467;&#2494;&#2480;</a></span>
+</div>
+<div id="wb_TextMenu2" style="position:absolute;left:1136px;top:1150px;width:114px;height:219px;text-align:center;z-index:21;">
+<span><a href="">&#2475;&#2482;&#2494;&#2475;&#2482; &#2465;&#2494;&#2441;&#2472;&#2482;&#2507;&#2465;</a></span>
+<span><a href="">&#2474;&#2509;&#2480;&#2468;&#2495;&#2487;&#2509;&#2464;&#2494;&#2472;&#2503;&#2480; &#2447;&#2453;&#2494;&#2441;&#2472;&#2509;&#2463;&#2488;</a></span>
+<span><a href="">&#2488;&#2509;&#2479;&#2494;&#2482;&#2494;&#2480;&#2496; &#2488;&#2495;&#2463;</a></span>
+<span><a href="">&#2459;&#2497;&#2463;&#2495;&#2480; &#2468;&#2494;&#2482;&#2495;&#2453;&#2494;</a></span>
+<span><a href="">&#2478;&#2509;&#2479;&#2494;&#2472;&#2503;&#2460;&#2495;&#2434; &#2453;&#2478;&#2495;&#2463;&#2495;</a></span>
+<span><a href="">&#2479;&#2507;&#2455;&#2494;&#2479;&#2507;&#2455;&#2503;&#2480; &#2464;&#2495;&#2453;&#2494;&#2472;&#2494;</a></span>
+<span><a href="">&#2480;&#2503;&#2460;&#2494;&#2482;&#2509;&#2463; &#2465;&#2494;&#2441;&#2472;&#2482;&#2507;&#2465;</a></span>
+<span><a href="">&#2486;&#2498;&#2472;&#2509;&#2479;&#2474;&#2470;&#2503;&#2480; &#2468;&#2494;&#2482;&#2495;&#2453;&#2494;</a></span>
+<span><a href="">&#2488;&#2494;&#2480;&#2509;&#2453;&#2497;&#2482;&#2494;&#2480;</a></span>
+</div>
+<div id="wb_FontAwesomeIcon1" style="position:absolute;left:90px;top:1430px;width:80px;height:60px;text-align:center;z-index:22;">
+<div id="FontAwesomeIcon1"><i class="fa fa-facebook-official">&nbsp;</i></div></div>
+<div id="wb_FontAwesomeIcon3" style="position:absolute;left:350px;top:1430px;width:70px;height:60px;text-align:center;z-index:23;">
+<div id="FontAwesomeIcon3"><i class="fa fa-linkedin-square">&nbsp;</i></div></div>
+<div id="wb_FontAwesomeIcon2" style="position:absolute;left:180px;top:1430px;width:70px;height:60px;text-align:center;z-index:24;">
+<div id="FontAwesomeIcon2"><i class="fa fa-twitter-square">&nbsp;</i></div></div>
+<div id="wb_FontAwesomeIcon4" style="position:absolute;left:440px;top:1430px;width:60px;height:60px;text-align:center;z-index:25;">
+<div id="FontAwesomeIcon4"><i class="fa fa-instagram">&nbsp;</i></div></div>
+<div id="wb_FontAwesomeIcon5" style="position:absolute;left:590px;top:1430px;width:70px;height:53px;text-align:center;z-index:26;">
+<div id="FontAwesomeIcon5"><i class="fa fa-youtube">&nbsp;</i></div></div>
+<div id="wb_FontAwesomeIcon6" style="position:absolute;left:260px;top:1430px;width:70px;height:60px;text-align:center;z-index:27;">
+<div id="FontAwesomeIcon6"><i class="fa fa-google-plus-square">&nbsp;</i></div></div>
+<div id="wb_FontAwesomeIcon7" style="position:absolute;left:520px;top:1430px;width:60px;height:63px;text-align:center;z-index:28;">
+<div id="FontAwesomeIcon7"><i class="fa fa-wechat">&nbsp;</i></div></div>
+<div id="wb_Line2" style="position:absolute;left:85px;top:1474px;width:1168px;height:8px;z-index:29;">
+<img src="images/img0012.png" id="Line2" alt=""></div>
+<div id="Banner9" style="position:absolute;left:89px;top:1487px;width:1171px;height:52px;z-index:30"><span>Ashraful islam</span></div>
+<div id="wb_Text4" style="position:absolute;left:91px;top:1493px;width:317px;height:18px;z-index:31;text-align:left;">
+<span style="color:#000000;font-family:Arial;font-size:16px;">Copyright © 2015, All Rights Reserved</span></div>
+<div id="wb_MenuBar1" style="position:absolute;left:89px;top:250px;width:1171px;height:48px;z-index:1032;">
+<div id="MenuBar1">
+<ul style="display:none;">
+<li><span></span><span>&#2474;&#2509;&#2480;&#2458;&#2509;&#2459;&#2470;</span></li>
+<li><span></span><span>&#2474;&#2509;&#2480;&#2486;&#2494;&#2488;&#2472;</span></li>
+<li><span></span><span>&#2453;&#2494;&#2480;&#2509;&#2479;&#2453;&#2509;&#2480;&#2478;</span></li>
+<li><span></span><span>&#2476;&#2495;&#2477;&#2495;&#2472;&#2509;&#2472;&nbsp;&#2468;&#2469;&#2509;&#2479;</span></li>
+<li><span></span><span>&#2477;&#2480;&#2509;&#2468;&#2495;</span></li>
+<li><span></span><span>&#2465;&#2494;&#2441;&#2472;&#2482;&#2507;&#2465;</span></li>
+<li><span></span><span>&#2479;&#2507;&#2455;&#2494;&#2479;&#2507;&#2455;&#2503;&#2480;&nbsp;&#2464;&#2495;&#2453;&#2494;&#2472;&#2494;</span></li>
+<li><span></span><span>&#2437;&#2477;&#2495;&#2479;&#2507;&#2455;&nbsp;&#2453;&#2480;&#2509;&#2467;&#2494;&#2480;</span></li>
+<li><span></span><span>&#2453;&#2480;&#2509;&#2467;&#2494;&#2480;</span></li>
+<li><span></span><span>&#2474;&#2509;&#2480;&#2468;&#2495;&#2487;&#2509;&#2464;&#2494;&#2472;&#2503;&#2480;&nbsp;&#2447;&#2453;&#2494;&#2441;&#2472;&#2509;&#2463;&#2488;</span></li>
+<li><span></span><span>&#2489;&#2494;&#2460;&#2495;&#2480;&#2494;</span></li>
+<li><span></span><span>&#2437;&#2472;&#2509;&#2479;&#2494;&#2472;&#2509;&#2479;</span></li>
+</ul>
+</div>
+<script>
+var cmMenuBar1 =
+{
+   mainFolderLeft: '',
+   mainFolderRight: '<div style="width:18px;height:16px" class="MenuBar1SpacerDiv" />',
+   mainItemLeft: '',
+   mainItemRight: '<div style="width:18px;height:16px" class="MenuBar1SpacerDiv" />',
+   folderLeft: '',
+   folderRight: '<div style="width:18px;height:16px" class="MenuBar1SpacerDiv" />',
+   itemLeft: '',
+   itemRight: '<div style="width:18px;height:16px" class="MenuBar1SpacerDiv" />',
+   mainSpacing: 0,
+   subSpacing: 0,
+   delay: 100,
+   offsetHMainAdjust: [0, 0],
+   offsetSubAdjust: [0, 0]
+};
+var cmMenuBar1HSplit = [_cmNoClick, '<td class="MenuBar1MenuSplitLeft"><div></div></td>' +
+                                       '<td class="MenuBar1MenuSplitText"><div></div></td>' +
+                                       '<td class="MenuBar1MenuSplitRight"><div></div></td>'];
+var cmMenuBar1MainVSplit = [_cmNoClick, '<div><table width="20" cellspacing="0"><tr><td class="MenuBar1HorizontalSplit">|</td></tr></table></div>'];
+var cmMenuBar1MainHSplit = [_cmNoClick, '<td colspan="2" class="MenuBar1MainSplitText"><div></div></td><td class="MenuBar1MainSplitRight"><div></div></td>'];
+cmDrawFromText('MenuBar1', 'hbl', cmMenuBar1, 'MenuBar1');
+</script>
+</div>
+<form name="SiteSearch1_form" id="SiteSearch1_form" accept-charset="UTF-8" onsubmit="return searchPage(features)">
+<input type="text" id="SiteSearch1" style="position:absolute;left:900px;top:190px;width:251px;height:20px;line-height:20px;z-index:33;" name="SiteSearch1" value="" placeholder="Search this website"></form>
+<input type="button" id="Button1" onclick="searchPage();return false;" name="Search" value="Search" style="position:absolute;left:1160px;top:190px;width:100px;height:30px;z-index:34;">
+<div id="wb_JavaScript2" style="position:absolute;left:1169px;top:6px;width:91px;height:24px;z-index:35;">
+<div style="color:#000000;font-size:20px;font-family:Arial;font-weight:bold;font-style:normal;text-align:left;text-decoration:none" id="basicclock"></div>
+<script>
+function clock() 
+{
+   var digital = new Date();
+   var hours = digital.getHours();
+   var minutes = digital.getMinutes();
+   var seconds = digital.getSeconds();
+   if (minutes <= 9) minutes = "0" + minutes;
+   if (seconds <= 9) seconds = "0" + seconds;
+   dispTime = hours + ":" + minutes + ":" + seconds;
+
+   var basicclock = document.getElementById('basicclock');
+   basicclock.innerHTML = dispTime;
+   setTimeout("clock()", 1000);
+}
+clock();
+</script>
+
+</div>
+<div id="wb_JavaScript3" style="position:absolute;left:89px;top:6px;width:251px;height:24px;z-index:36;">
+<div style="color:#000000;font-size:20px;font-family:Arial;font-weight:normal;font-style:normal;text-align:left;text-decoration:none" id="basicdate"></div>
+<script>
+   var now = new Date();
+   var days = new Array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday');
+   var months = new Array('January','February','March','April','May','June','July','August','September','October','November','December');
+   var date = ((now.getDate() < 10) ? "0" : "") + now.getDate();
+   var year = (now.getYear() < 1000) ? now.getYear() + 1900 : now.getYear();
+   today = days[now.getDay()] + ", " + months[now.getMonth()] + " " + date + ", " + year;
+   var basicdate = document.getElementById('basicdate');
+   basicdate.innerHTML = today;
+</script>
+
+
+</div>
+<hr id="Line3" style="position:absolute;left:720px;top:728px;width:308px;height:6px;z-index:37;">
+<div id="wb_Image3" style="position:absolute;left:850px;top:1150px;width:273px;height:280px;z-index:38;">
+<a href="http://web2apk.com/download.aspx?file=shomospurschool.apk" target="_blank" title="shomospurschool.apk"><img src="images/shomospurschool.png" id="Image3" alt=""></a></div>
+<div id="wb_Text6" style="position:absolute;left:902px;top:1437px;width:192px;height:38px;text-align:center;z-index:39;">
+<span style="color:#008000;font-family:Arial;font-size:17px;"><strong>Download</strong></span><span style="color:#C0C0C0;font-family:Arial;font-size:17px;"><strong> </strong></span><span style="color:#FF0000;font-family:Arial;font-size:17px;"><strong>shomospurschool.app</strong></span></div>
+<div id="wb_Text7" style="position:absolute;left:841px;top:1430px;width:66px;height:27px;z-index:40;text-align:left;">
+<span style="color:#3A66CC;font-family:Arial;font-size:24px;"><u>scan</u></span></div>
+<div id="wb_Text8" style="position:absolute;left:985px;top:1415px;width:27px;height:23px;text-align:justify;z-index:41;">
+<span style="background-color:#FFFFFF;color:#DC143C;font-family:Arial;font-size:20px;">or</span></div>
+<div id="wb_Text9" style="position:absolute;left:1102px;top:1430px;width:46px;height:27px;z-index:42;text-align:left;">
+<span style="background-color:#FFFFFF;color:#3A66CC;font-family:Arial;font-size:24px;"><a href="http://web2apk.com/download.aspx?file=shomospurschool.apk" target="_blank" title="shomospurschool.apk">visit</a></span></div>
+<div id="wb_JavaScript4" style="position:absolute;left:907px;top:1495px;width:352px;height:36px;z-index:43;">
+<script>
+
+/*
+RAINBOW TEXT Script by Matt Hedgecoe (c) 2002
+Featured on JavaScript Kit
+For this script, visit http://www.javascriptkit.com
+*/
+
+var text="Designer Ashraful islam";
+var speed=80;
+
+if (document.all||document.getElementById)
+{
+   document.write('<div style="font-family:Times New Roman;font-size:28px;font-weight:bold;font-style:normal;text-align:left;text-decoration:none;" id="highlight">' + text + '<\/div>');
+   var storetext=document.getElementById? document.getElementById("highlight") : document.all.highlight;
+}
+else
+   document.write(text);
+
+var hex=new Array("00","14","28","3C","50","64","78","8C","A0","B4","C8","DC","F0");
+var r=1;
+var g=1;
+var b=1;
+var seq=1;
+function changetext()
+{
+   rainbow="#"+hex[r]+hex[g]+hex[b];
+   storetext.style.color=rainbow;
+}
+function change()
+{
+   if (seq==6)
+   {
+      b--;
+      if (b==0)
+        seq=1;
+   }
+   if (seq==5)
+   {
+      r++;
+      if (r==12)
+         seq=6;
+   }
+   if (seq==4)
+   {
+      g--;
+      if (g==0)
+         seq=5;
+   }
+   if (seq==3)
+   {
+      b++;
+      if (b==12)
+         seq=4;
+   }
+   if (seq==2)
+   {
+      r--;
+      if (r==0)
+         seq=3;
+   }
+   if (seq==1)
+   {
+      g++;
+      if (g==12)
+         seq=2;
+   }
+   changetext();
+}
+
+function starteffect()
+{
+   if (document.all||document.getElementById)
+      flash=setInterval("change()",speed);
+}
+starteffect();
+</script>
+
+</div>
+<div id="wb_JavaScript5" style="position:absolute;left:429px;top:6px;width:508px;height:24px;z-index:44;">
+<div style="color:#000000;font-size:20px;font-family:Arial;font-weight:normal;font-style:normal;text-align:left;text-decoration:none;" id="text_scroller"></div>
+<script>
+var messages = new Array
+(
+   'Welcome to shomospurschool',
+   'The easiest Web Page  available',
+   'http://shomospurschool.edu.bd/'
+);
+var speed = 100;
+var currentMsg = 0;
+function doScroller(text, pos, direction)
+{
+   var text_scroller = document.getElementById('text_scroller');
+   text_scroller.innerText = '[' + text.substring(0, pos) + ']';
+
+   pos += direction;
+   if (pos > text.length)
+   {
+      setTimeout('doScroller("'+text+'",'+pos+','+(-direction)+')', speed*10);
+   }
+   else
+   {
+     if (pos < 0)
+     {
+        currentMsg++;
+        if(currentMsg >= messages.length)
+          currentMsg = 0;
+        text = messages[currentMsg];
+        direction = -direction;
+     }
+     setTimeout('doScroller("'+text+'",'+pos+','+direction+')', speed);
+   }
+}
+doScroller(messages[0], 0, 1);
+</script>
+</div>
+<div style="z-index:45">
+<div id="stickyemail" style="position:absolute; left:0px; top:-100px">
+<a href="mailto:ashrafulbd12@gmail.com"><img name="stickyemail_img" src="email.gif" border="0"></a>
+</div>
+<script>
+var x, y;
+
+function getWindowSize()
+{
+   var imgWidth = document.images['stickyemail_img'].width;
+   var imgHeight = document.images['stickyemail_img'].height;
+
+   if (typeof window.innerWidth != 'undefined')
+   {
+      x = window.innerWidth - imgWidth - 25;
+      y = window.innerHeight - imgHeight - 10;
+   }
+   else 
+   if (typeof document.documentElement != 'undefined' && typeof document.documentElement.clientWidth != 'undefined' && document.documentElement.clientWidth != 0)
+   {
+      x = document.documentElement.clientWidth - imgWidth - 10;
+      y = document.documentElement.clientHeight - imgHeight - 10;
+   }
+   else
+   {
+      x = document.getElementsByTagName('body')[0].clientWidth - imgWidth - 10;
+      y = document.getElementsByTagName('body')[0].clientHeight - imgHeight - 10;
+   }
+   setInterval('moveImage()', 100);
+}
+function moveImage()
+{
+   var dx = 0, dy = 0;
+   if (typeof( window.pageYOffset ) == 'number') 
+   {
+      dx = window.pageXOffset;
+      dy = window.pageYOffset;
+   } 
+   else 
+   if (document.body && (document.body.scrollLeft || document.body.scrollTop)) 
+   {
+      dx = document.body.scrollLeft;
+      dy = document.body.scrollTop;
+   } 
+   else 
+   if (document.documentElement && (document.documentElement.scrollLeft || document.documentElement.scrollTop)) 
+   {
+      dx = document.documentElement.scrollLeft;
+      dy = document.documentElement.scrollTop;
+   }
+
+   var logo = document.getElementById('stickyemail');
+   logo.style.left = x+dx+'px';
+   logo.style.top = y+dy+'px';
+}
+window.onload = function()
+{
+   getWindowSize();
+}
+window.onresize = function()
+{
+   getWindowSize();
+}
+</script></div>
+</body>
+</html>
